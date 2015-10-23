@@ -1,0 +1,21 @@
+1. create a private key 
+#openssl genrsa -des3 -out secret.key 2048
+
+2. create a public key by using previously created private key 
+#openssl rsa -in secret.key -out public.key -outform PEM -pubout
+
+3. create a certificate valied for 1500 days using the private key 
+#openssl req -new -x509 -days 1500 -key secret.key -out my.crt
+
+4. encrypt a file using the certificate 
+#openssl smime -encrypt -binary -aes-256-cbc -in <raw-file> -out <file.enc> -outform DER my.crt
+
+5. decrypt a file (you will be asked for the privatekey password)
+#openssl smime -decrypt -binary -in <file.enc> -inform DER -out <raw-file> -inkey secret.key
+
+6. encrypt a file by using AES encryption method
+# openssl enc -aes-256-cbc -a -salt -in <raw-file> -out <file.enc> -pass pass:<passwd>
+
+7.decrypt a file by using AES algorithm
+#openssl enc -d -a -aes-256-cbc -in <file.enc> -out <raw-file> -pass pass:<passwd>
+
