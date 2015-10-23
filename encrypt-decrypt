@@ -13,7 +13,7 @@
 5. decrypt a file (you will be asked for the privatekey password)
 #openssl smime -decrypt -binary -in <file.enc> -inform DER -out <raw-file> -inkey secret.key
 
-6. encrypt a file by using AES encryption method
+6. encrypt a file by using AES algorithm
 # openssl enc -aes-256-cbc -a -salt -in <raw-file> -out <file.enc> -pass pass:<passwd>
 
 7.decrypt a file by using AES algorithm
