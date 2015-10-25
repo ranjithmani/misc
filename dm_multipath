@@ -1,0 +1,16 @@
+#This is a basic configuration file for multiipathing 
+#you can add all other section like device etc , if you want .
+
+defaults {
+        user_friendly_names no
+}
+
+blacklist {
+        devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*"
+}
+
+
+blacklist_exceptions {
+	wwid "3500601608860644e500601608860644e"
+	wwid "36006016078e03a00cf7e2dd174efe411"
+}
