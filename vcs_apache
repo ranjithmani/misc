@@ -1,0 +1,69 @@
+#This is a command list for configuring a webserver under Veritas cluster.
+
+#Define service group "webgrp"
+
+haconf -makerw <----make the configuration Read/write 
+hagrp -add webgrp
+hagrp -modify webgrp SystemList vcsnode1 0 vcsnode2 1
+hagrp -modify webgrp AutoStartList vcsnode1 vcsnode2
+hagrp -modify webgrp Parallel 0
+#
+
+#Define diskgroup resource
+
+hares -add web_dg DiskGroup webgrp
+hares -modify web_dg DiskGroup appdg
+hares -modify web_dg Critical 1
+hares -modify web_dg Enabled 1
+#
+
+#Define volume resource(optional)
+
+hares -add web_vol Volume webgrp
+hares -modify web_vol DiskGroup appdg
+hares -modify web_vol Volume appvol
+hares -modify web_vol Critical 1
+hares -link web_vol web_dg
+hares -modify web_vol Enabled 1
+#
+
+#Define mount resource
+
+hares -add web_mount Mount webgrp 
+hares -modify web_mount BlockDevice /dev/vx/dsk/appdg/appvol
+hares -modify web_mount MountPoint /var/www/html
+hares -modify web_mount FSType vxfs
+hares -modify web_mount FsckOpt %-n
+hares -modify web_mount Critical 1
+hares -link web_mount web_vol
+hares -modify web_mount Enabled 1
+#
+#Define nic resource
+
+hares -add web_nic NIC webgrp
+hares -modify web_nic Device eth0
+hares -modify web_nic Critical 1
+hares -modify web_nic Enabled 1
+#
+#Define IP resource 
+
+hares -add web_ip IP webgrp
+hares -modify web_ip Device eth0
+hares -modify web_ip Address 192.168.122.39
+hares -modify web_ip NetMask 255.255.255.0
+hares -modify web_ip Critical 1
+hares -link web_ip web_nic
+hares -modify web_ip Enabled 1
+#
+#Define Apache resource
+
+hares -add web_httpd Apache webgrp
+hares -modify web_httpd ResLogLevel INFO
+hares -modify web_httpd Port 80
+hares -modify web_httpd httpdDir /usr/sbin
+hares -modify web_httpd ConfigFile /etc/httpd/conf/httpd.conf
+hares -modify web_httpd Critical 1
+hares -link web_httpd web_ip
+hares -link web_httpd web_mount
+hares -modify web_httpd Enabled 1
+haconf -dump -makero<----dump the configuration to all the cluster nodes and make the configuration ReadOnly
