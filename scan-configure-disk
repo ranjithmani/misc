@@ -1,0 +1,38 @@
+===============> LUN scanning <===============
+--------------------------------------------------------------------------------------------------------
+precheck : identify the FC_hosts in the server
+# systool -c fc_host -v 
+# ls -l /sys/class/fc_host/  <----it will give the available hosts in the server replace this with host*
+---------------------------------------------------------------------------------------------------------
+1. check the existing LUNs available in the server (note the timestamp of each disk)
+# ls -lrt /dev/disk/by-id
+
+2. To scan a new LUN given from SAN
+#echo " - - - " > /sys/class/scsi_host/host*/scan
+
+3. Again perform the step 1 and identify the new LUN/disk with new timestamp
+
+
+================> LVM creation <==============
+1. Create a New VG with the newly scanned disk 
+#vgcreate newvg /dev/<newdisk>
+
+2. Create a LV with 50GB
+#lvcreate -L +50G -n newlv newvg
+
+3. create a ext4 partition in newly created LV
+#mkfs.ext4 /dev/newvg/newlv
+
+4. mount the lv in mount point data(make entry in fstab for persistancy)
+# mount /dev/newvg/newlv /data
+
+=================> NFS exporting <===============
+1. Edit the /etc/exports
+/data *(rw)
+
+2. export the new share
+#exportfs -r
+
+3.check the new share 
+#showmount -e
+
