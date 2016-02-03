@@ -37,3 +37,7 @@ txtrst='\e[0m'    # Text Reset
 Bash prompt
 ============
 PS1="[\$?]\e[0;33m[\h]\e[m\e[0;32m[\u][\W]->\e[m"
+
+History time stamp
+==================
+export HISTTIMEFORMAT="%d/%m/%y %T "
