@@ -5,3 +5,9 @@ To check network throughput using DD
 To check disk read/write 
 ------------------------
 #hdparm -tT /dev/<disk-name>
+
+To check the anonymus memory for a process
+-------------------------------------------
+unset an;an=0;for i in `pmap <PID> |grep anon |awk '{print $2}'|sed 's/K//'` ; do r=`expr $r + $i` ; done ;echo $an
+
+
