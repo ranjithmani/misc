@@ -44,6 +44,11 @@ export HISTTIMEFORMAT="%d/%m/%y %T "
 
 Enable command logging 
 =======================
-
 function HistSyslog { echo -n "USER $USER : PWD $PWD : CMD = $BASH_COMMAND : FROM $SSH_CONNECTION" :Term  `tty`:  | grep -v -e "echo -ne "| logger -p local6.notice -i ; }
 trap HistSyslog DEBUG
+
+
+Who is using SWAP memory
+========================
+for file in /proc/*/status ; do awk '/VmSwap|Name/{printf $2 " " $3}END{ print ""}' $file; done | sort -k 2 -n -r | less
+
