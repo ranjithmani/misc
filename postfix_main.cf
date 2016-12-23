@@ -1,0 +1,21 @@
+#this configuration create multiple domain mailbox 
+
+alias_database = hash:/etc/aliases
+alias_maps = hash:/etc/aliases
+append_dot_mydomain = no
+biff = no
+config_directory = /etc/postfix
+home_mailbox = Maildir/
+inet_interfaces = all
+mailbox_size_limit = 0
+myhostname = localhost
+mynetworks = 127.0.0.0/8, 192.168.1.0/24
+myorigin = $myhostname
+recipient_delimiter = +
+smtpd_banner = $myhostname ESMTP
+virtual_gid_maps = static:5000
+virtual_mailbox_base = /home/vmail
+virtual_mailbox_domains = /etc/postfix/vhosts
+virtual_mailbox_maps = hash:/etc/postfix/vmaps
+virtual_minimum_uid = 1000
+virtual_uid_maps = static:5000
