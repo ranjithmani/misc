@@ -1,0 +1,134 @@
+---
+- hosts: all
+  vars:
+   - virt_user: admin
+   - dom_name: centos
+   - cloud_img: "/tmp/{{ dom_name }}.iso"
+   - cloud_disk: "/tmp/{{ dom_name }}.qcow2"
+   - disk_locaton: "/var/lib/libvirt/images"
+  vars_file:
+  - vm.yml
+
+  handlers:
+  - name: 
+  
+  tasks:
+  - block:
+    - name: "End the playbook if the host is a VM"
+      debug:
+        msg: "This playbook cannot proceed since it is a VM"
+
+    - meta: end_play
+  when: ansible_host_model == "Vmware"
+
+  - block:
+    - name: Enable epel repository
+      yum:
+       name: epel-release
+       state: present
+    
+    - name: Install Qemu-KVM
+      yum: 
+       name: {{ item }}
+       state: latest
+       update_cache: yes
+      loop:
+        - qemu-kvm
+        - libvirt
+        - libvirt-python
+        - libguestfs-tools
+        - virt-install
+
+    - name: Start libvirtd
+      service:
+       name: libvirtd
+       state: started
+       enabled: yes
+  when: ansible_distribution_type == "Redhat"
+  
+  - block:
+    - name: Install Qemu-KVM
+      apt: 
+       name: {{ item }}
+       state: latest
+       update_cache: yes
+      loop:
+       - qemu-kvm
+       - libvirt-daemon-system
+       - libvirt-clients
+       - bridge-utils
+    
+    - name: Add users to livirt  and kvm 
+      command: adduser "{{ virt_user }}" "{{ item }}"
+      loop:
+        - libvirt
+        - kvm
+    
+    - name: Start libvirtd
+      service: 
+       name: libvirtd
+       state: started
+       enabled: yes
+  when: ansible_distribution_type == "Debain"
+
+  -name: check for the cloudimg present
+   command: "ls {{ cloud_disk}}"
+   register: clouddisk
+
+  - name: Download the cloud image 
+    get_url: 
+     url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-20150628_01.qcow2
+     dest: /tmp/{{ dom_name }}
+     mode: 0644
+    changed_when: "clouddisk != 0" 
+
+  - name: check whether the cloudinit present
+    command: "ls {{ cloud_img }}"
+    register: cloudinit
+  
+  - name: Create Cloud init config
+    command: cluod-localds /tmp/"{{ dom_name }}".iso /tmp/user_data.txt
+    changed_when: "cloudinit.rc != 0"
+      
+  - name: copy cloud init image
+    copy: 
+     src: /tmp/"{{ dom_name }}".iso
+     dest: "{{ disk_location }}"
+     mode: 0644
+    
+  - name: convert the cloud image to disk
+    command: "qemu-img convert -f qcow2 /tmp/{{ dom_name }} {{ disk_location }}"
+
+   - name: get list of VMs
+      virt:
+        command: "list_vms"
+      register: vms
+  
+  - name: Create Domain
+    command: >
+                virt-install --import --name {{ item.key }}
+                --memory {{ item.value.mem }} --vcpus {{ item.value.cpus }}
+                --disk {{ vm_location }}/{{ item.key }}.{{ item.value.file_type }}
+                --noautoconsole --os-variant {{ item.value.os_type }}                
+      when: item.key not in vms.list_vms 
+    
+    
+    
+    
+    -------------------------------------------
+    
+    ---
+vm_location: "/var/lib/libvirt/images/"
+root_pass: "password"
+
+guests:
+  test:
+    mem: 512
+    cpus: 1
+    os_type: rhel7
+    file_type: qcow2
+  test2:
+    mem: 512
+    cpus: 1
+    os_type: rhel7
+    file_type: qcow2
