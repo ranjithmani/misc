@@ -1,0 +1,24 @@
+#!ipxe
+
+set base-url http://192.168.122.50
+
+menu PXE Boot Menu
+item ubuntu24   Install Ubuntu 24.04
+item rocky10     Install Rocky Linux 10
+item shell      iPXE Shell
+choose --default ubuntu24 --timeout 5000 target
+
+goto ${target}
+
+:ubuntu24
+kernel ${base-url}/ubuntu/24.04/vmlinuz ip=dhcp autoinstall ds=nocloud-net;s={base-url}/ubuntu/24.04/autoinstall/  url=${base-url}/ubuntu/24.04/ubuntu.iso
+initrd ${base-url}/ubuntu/24.04/initrd
+boot
+
+:rocky10
+kernel ${base-url}/rocky/10/vmlinuz ip=dhcp inst.repo=${base-url}/rocky/10/rocky/ inst.ks=http://192.168.122.50/rocky/10/ks.cfg
+initrd ${base-url}/rocky/10/initrd.img
+boot
+
+:shell
+shell
